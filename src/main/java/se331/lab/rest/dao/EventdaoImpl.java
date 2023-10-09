@@ -1,6 +1,10 @@
 package se331.lab.rest.dao;
 
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 import se331.lab.rest.entity.Event;
 
@@ -8,11 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class EventDaoImpl implements EventDao {
+@Profile("manual")
+public class EventdaoImpl implements EventDao{
     List<Event> eventList;
 
     @PostConstruct
-    public  void init() {
+    public void init() {
         eventList = new ArrayList<>();
         eventList.add(Event.builder()
                 .id(123L)
@@ -23,7 +28,6 @@ public class EventDaoImpl implements EventDao {
                 .date("January 28, 2022")
                 .time("12:00")
                 .petAllowed(true)
-                .organizer("Kat Laydee")
                 .build());
         eventList.add(Event.builder()
                 .id(456L)
@@ -34,7 +38,6 @@ public class EventDaoImpl implements EventDao {
                 .date("March 14, 2022")
                 .time("10:00")
                 .petAllowed(true)
-                .organizer("Fern Pollin")
                 .build());
         eventList.add(Event.builder()
                 .id(789L)
@@ -45,7 +48,6 @@ public class EventDaoImpl implements EventDao {
                 .date("July 22, 2022")
                 .time("11:00")
                 .petAllowed(true)
-                .organizer("Carey Wales")
                 .build());
 
         eventList.add(Event.builder()
@@ -57,7 +59,6 @@ public class EventDaoImpl implements EventDao {
                 .date("August 28, 2022")
                 .time("12:00")
                 .petAllowed(true)
-                .organizer("Dawg Dahd")
                 .build());
 
         eventList.add(Event.builder()
@@ -69,7 +70,6 @@ public class EventDaoImpl implements EventDao {
                 .date("September 14, 2022")
                 .time("3:00")
                 .petAllowed(true)
-                .organizer("Kahn Opiner")
                 .build());
 
         eventList.add(Event.builder()
@@ -81,7 +81,6 @@ public class EventDaoImpl implements EventDao {
                 .date("July 22, 2022")
                 .time("11:00")
                 .petAllowed(false)
-                .organizer("Brody Kill")
                 .build());
 
     }
@@ -91,28 +90,21 @@ public class EventDaoImpl implements EventDao {
     }
 
     @Override
-    public List<Event> getEvents(Integer pageSize, Integer page) {
+    public Page<Event> getEvents(Integer pageSize, Integer page) {
         pageSize = pageSize == null ? eventList.size() : pageSize;
         page = page == null ? 1 : page;
-        Integer firstIndex = (page - 1) * pageSize;
-        List<Event> output = new ArrayList<>();
-        for (int i = firstIndex; i < firstIndex + pageSize; i++) {
-            output.add(eventList.get(i));
-        }
-        return output;
+        int firstIndex = (page - 1) * pageSize;
+        return new PageImpl<Event>(eventList.subList(firstIndex,firstIndex+pageSize),PageRequest.of(page,pageSize),eventList.size());
     }
-
     @Override
-    public Event getEvent(Long id) {
-        Event output = null;
-        for (Event event :
-            eventList) {
-            if (event.getId().equals(id)) {
-                output = event;
-                break;
-            }
-        }
-        return output;
+    public Event getEvent (Long id) {
+        return eventList.stream().filter(event ->
+                event.getId().equals(id)).findFirst().orElse(null);
+    }
+    @Override
+    public Event save(Event event) {
+        event.setId(eventList.get(eventList.size()-1).getId()+1);
+        eventList.add(event);
+        return event;
     }
 }
-
