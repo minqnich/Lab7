@@ -2,9 +2,13 @@ package se331.lab.rest.config;
 
 
 import jakarta.transaction.Transactional;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import se331.lab.rest.entity.Event;
 import se331.lab.rest.entity.Organizer;
@@ -12,17 +16,28 @@ import se331.lab.rest.entity.Participant;
 import se331.lab.rest.repository.EventRepository;
 import se331.lab.rest.repository.OrganizerRepository;
 import se331.lab.rest.repository.ParticipantRepository;
+import se331.lab.rest.security.user.Role;
+import se331.lab.rest.security.user.User;
+import se331.lab.rest.security.user.UserRepository;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
+
+import static se331.lab.rest.security.user.Role.ROLE_ADMIN;
 
 @Component
 @RequiredArgsConstructor
 public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
+    @Autowired
     final EventRepository eventRepository;
     final OrganizerRepository organizerRepository;
     final ParticipantRepository participantRepository;
+    final UserRepository userRepository;
     @Override
     @Transactional
     public void onApplicationEvent(ApplicationReadyEvent applicationReadyEvent) {
-        Participant p1,p2,p3,p4,p5;
+        Participant p1, p2, p3, p4, p5;
         p1 = participantRepository.save(Participant.builder()
                 .name("gigi")
                 .telNo("01")
@@ -43,7 +58,7 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .name("jaja")
                 .telNo("05")
                 .build());
-        Organizer org1,org2,org3;
+        Organizer org1, org2, org3;
         org1 = organizerRepository.save(Organizer.builder()
                 .name("CAMT").build());
         org2 = organizerRepository.save(Organizer.builder()
@@ -102,11 +117,48 @@ public class InitApp implements ApplicationListener<ApplicationReadyEvent> {
                 .time("10.00-6.00 pm.")
                 .petAllowed(false)
                 .build());
+
         tempEvent.setOrganizer(org3);
         org3.getOwnEvents().add(tempEvent);
-        p3.getEventHistory().add(tempEvent);
-        p4.getEventHistory().add(tempEvent);
-        p5.getEventHistory().add(tempEvent);
+        addUser();
+    }
+
+    User user1,user2,user3;
+    private void addUser() {
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        user1 = User.builder()
+                .username("admin")
+                .password(encoder.encode("admin"))
+                .firstname("admin")
+                .lastname("admin")
+                .email("admin@admin.com")
+                .enabled(true)
+                .lastPasswordRestData(Date.from(LocalDate.of(2021,01,01).atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .build();
+
+        user2 = User.builder()
+                .username("user")
+                .password(encoder.encode("user"))
+                .firstname("user")
+                .lastname("user")
+                .email("enabled@user.com")
+                .enabled(true)
+                .lastPasswordRestData(Date.from(LocalDate.of(2021,01,01).atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .build();
+
+        user3 = User.builder()
+                .username("disableUser")
+                .password(encoder.encode("disableUser"))
+                .firstname("disableUser")
+                .lastname("disableUser")
+                .email("disableUser@user.com")
+                .enabled(false)
+                .lastPasswordRestData(Date.from(LocalDate.of(2021,01,01).atStartOfDay(ZoneId.systemDefault()).toInstant()))
+                .build();
+        user1.getRoles().add(ROLE_ADMIN);
+        userRepository.save(user1);
+        userRepository.save(user2);
+        userRepository.save(user3);
     }
 
 }

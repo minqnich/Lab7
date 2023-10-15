@@ -11,3 +11,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
+  servlet:
+    multipart:
+      max-file-size: 10MB
+application:
+  security:
+    jwt:
+      expiration: 86400000 # 86400000 # a day
+      refresh-token:
+        expiration: 604800000 # 7 days
+      secret-key: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTY5NzA0OTU2NSwiZXhwIjoxNjk3MTM1OTY1fQ.Baz5OnHzEbCnXZ_gpqZmXKQOcmdVYjqy-MQcLmE5teQ
+
+
+

@@ -1,6 +1,5 @@
 package se331.lab.rest.entity;
 
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.List;
 
